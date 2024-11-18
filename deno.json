@@ -1,10 +1,14 @@
 {
-	"compilerOptions": {
-		"strict": false
-	},
-	"fmt": {
-		"indentWidth": 2,
-		"useTabs": true,
-		"semiColons": true
-	}
+    "compilerOptions": {
+        "strict": false
+    },
+    "fmt": {
+        "indentWidth": 2,
+        "useTabs": true,
+        "semiColons": true
+    },
+    "tasks": {
+        "start": "deno run -A ./main.ts",
+        "dev": "deno run -A --watch ./main.ts"
+    }
 }
