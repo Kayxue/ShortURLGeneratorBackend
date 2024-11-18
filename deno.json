@@ -1,5 +1,10 @@
 {
-    "compilerOptions": {
-        "strict": false
-    }
+	"compilerOptions": {
+		"strict": false
+	},
+	"fmt": {
+		"indentWidth": 2,
+		"useTabs": true,
+		"semiColons": true
+	}
 }
