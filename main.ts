@@ -8,12 +8,12 @@ const hono = new Hono();
 hono.use(cors());
 
 hono.get("/", (c) => {
-    return c.text("Welcome to the ShortURL Backend");
+	return c.text("Welcome to the ShortURL Backend");
 });
 
 for await (const file of expandGlob(`${Deno.cwd()}/Router/**/*.ts`)) {
-    const { route, router }: IRouterExport = (await import(file.path)).default;
-    hono.route(route, router);
+	const { route, router }: IRouterExport = (await import(file.path)).default;
+	hono.route(route, router);
 }
 
 Deno.serve({ port: 3000 }, hono.fetch);
