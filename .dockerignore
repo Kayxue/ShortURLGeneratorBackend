@@ -1,5 +1,4 @@
 # flyctl launch added from .gitignore
 **/*.lock
 **/*.lockb
-**/*.env
 fly.toml
