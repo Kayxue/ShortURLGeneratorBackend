@@ -1,7 +1,6 @@
 import { Hono } from "jsr:@hono/hono";
 import { cors } from "jsr:@hono/hono/cors";
 import { expandGlob } from "jsr:@std/fs";
-import { zValidator } from "npm:@hono/zod-validator";
 import IRouterExport from "./Interfaces/Interface.ts";
 
 const hono = new Hono();
