@@ -14,8 +14,8 @@ hono.post("/create", zValidator("json", createUrlSchema), async (c) => {
 
 hono.patch(
 	"/:param",
-	/* Login Middleware, Url Owned Middleware, zodValidator, */ (c) => {
-		//TODO: Check the short url information exist, if exist, update the information.
+	/* Login Middleware, zodValidator, */ (c) => {
+		//TODO: Check the short url information exist and owned by the user, if yes, update the information.
 		return c.text("Update Path");
 	},
 );
