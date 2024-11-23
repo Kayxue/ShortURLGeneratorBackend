@@ -1,6 +1,7 @@
 import { Hono } from "jsr:@hono/hono";
 import { cors } from "jsr:@hono/hono/cors";
 import { expandGlob } from "jsr:@std/fs";
+import { zValidator } from "npm:@hono/zod-validator";
 import IRouterExport from "./Interfaces/Interface.ts";
 
 const hono = new Hono();
@@ -12,7 +13,8 @@ hono.get("/", (c) => {
 });
 
 for await (const file of expandGlob(`${Deno.cwd()}/Router/**/*.ts`)) {
-	const { route, router }: IRouterExport = (await import(file.path)).default;
+	const { route, router }: IRouterExport =
+		(await import(`file://${file.path}`)).default;
 	hono.route(route, router);
 }
 
