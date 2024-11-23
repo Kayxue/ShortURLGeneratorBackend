@@ -12,19 +12,22 @@ hono.post("/create", zValidator("json", createUrlSchema), async (c) => {
 	return c.json({ userId, param, url, password });
 });
 
-hono.patch("/:param",/* Login Middleware, Url Owned Middleware, zodValidator, */c => {
-	//TODO: Check the short url information exist, if exist, update the information.
-	return c.text("Update Path")
-})
+hono.patch(
+	"/:param",
+	/* Login Middleware, Url Owned Middleware, zodValidator, */ (c) => {
+		//TODO: Check the short url information exist, if exist, update the information.
+		return c.text("Update Path");
+	},
+);
 
-hono.get("/:param",c => {
+hono.get("/:param", (c) => {
 	//TODO: Get url to redirect to from database and check whether the short url need password to redirect
-	return c.text("url redirect")
-})
+	return c.text("url redirect");
+});
 
-hono.post("/:param/password",c => {
+hono.post("/:param/password", (c) => {
 	//TODO: Check password for the short url which need password verification.
-	return c.text("url password verification")
-})
+	return c.text("url password verification");
+});
 
 export default { route: "/shorturl", router: hono } as IRouterExport;
