@@ -8,8 +8,8 @@ import { z } from "npm:zod";
 const hono = new Hono();
 
 hono.post("/create", zValidator("json", createUrlSchema), async (c) => {
-	const data=await c.req.json()
-	return c.text("created route");
+	const data = await c.req.json();
+	return c.json(data);
 });
 
 export default { route: "/shorturl", router: hono } as IRouterExport;
