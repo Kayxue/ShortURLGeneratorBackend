@@ -3,6 +3,7 @@ import { cors } from "npm:hono/cors";
 import { expandGlob } from "jsr:@std/fs";
 import IRouterExport from "./Interfaces/Interface.ts";
 import { CookieStore, Session, sessionMiddleware } from "npm:hono-sessions";
+import { sessionKey } from "./Config.ts";
 
 const hono = new Hono<
 	{ Variables: { session: Session; session_key_rotation: boolean } }
@@ -14,7 +15,7 @@ hono.use(
 	"*",
 	sessionMiddleware({
 		store,
-		encryptionKey: "q3lmasmva['m[a'mksd['m,v[sdm[mska[sdmk[c",
+		encryptionKey: sessionKey,
 		expireAfterSeconds: 60 * 60 * 24,
 	}),
 );
