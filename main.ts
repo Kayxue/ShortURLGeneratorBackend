@@ -1,9 +1,23 @@
-import { Hono } from "jsr:@hono/hono";
-import { cors } from "jsr:@hono/hono/cors";
+import { Hono } from "npm:hono";
+import { cors } from "npm:hono/cors";
 import { expandGlob } from "jsr:@std/fs";
 import IRouterExport from "./Interfaces/Interface.ts";
+import { CookieStore, Session, sessionMiddleware } from "npm:hono-sessions";
 
-const hono = new Hono();
+const hono = new Hono<
+	{ Variables: { session: Session; session_key_rotation: boolean } }
+>();
+
+const store = new CookieStore();
+
+hono.use(
+	"*",
+	sessionMiddleware({
+		store,
+		encryptionKey: "q3lmasmva['m[a'mksd['m,v[sdm[mska[sdmk[c",
+		expireAfterSeconds: 60 * 60 * 24,
+	}),
+);
 
 hono.use(cors());
 

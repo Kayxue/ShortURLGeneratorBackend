@@ -1,4 +1,4 @@
-import { Hono } from "jsr:@hono/hono";
+import { Hono } from "npm:hono";
 import { nanoid } from "npm:nanoid";
 import { zValidator } from "npm:@hono/zod-validator";
 import IRouterExport from "../Interfaces/Interface.ts";

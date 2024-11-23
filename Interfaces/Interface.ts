@@ -1,4 +1,4 @@
-import { Hono } from "jsr:@hono/hono";
+import { Hono } from "npm:hono";
 
 export default interface IRouterExport {
 	route: string;
