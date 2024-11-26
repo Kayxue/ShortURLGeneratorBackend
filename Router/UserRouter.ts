@@ -8,15 +8,29 @@ import {
 	userUpdatePasswordSchema,
 	userUpdateSchema,
 } from "../Schema/ZodSchema.ts";
+import { hash, Variant, Version } from "jsr:@felix/argon2";
 
 const hono = new Hono();
 
 hono.post("insert", zValidator("json", userCreateSchema), async (c) => {
-	//TODO: Add user
+	const { username, password, name } = await c.req.json();
+	const objectToInsert = {
+		username,
+		password: await hash(password, {
+			variant: Variant.Argon2id,
+			version: Version.V13,
+			timeCost: 8,
+			lanes: 8,
+		}),
+		name,
+	};
+	//TODO: Add user to database
+	return c.text("User insert route");
 });
 
 hono.post("login", zValidator("json", userLoginSchema), async (c) => {
 	//TODO: Handle user login
+	return c.text("User Login");
 });
 
 hono.patch(
@@ -25,6 +39,7 @@ hono.patch(
 	zValidator("json", userUpdateSchema),
 	async (c) => {
 		//TODO: Update user information
+		return c.text("User update route");
 	},
 );
 
@@ -34,11 +49,8 @@ hono.patch(
 	zValidator("json", userUpdatePasswordSchema),
 	async (c) => {
 		//TODO: Update user password
+		return c.text("Update user password route");
 	},
 );
-
-hono.delete("delete/:id", LoginMiddleware, async (c) => {
-	//TODO: Delete user and logout
-});
 
 export default { route: "/user", router: hono } as IRouterExport;

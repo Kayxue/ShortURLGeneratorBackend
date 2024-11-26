@@ -5,6 +5,7 @@ export const createUrlSchema = z.object({
 	param: z.string().optional(),
 	url: z.string(),
 	password: z.string().optional(),
+	expiredDate: z.date().optional(),
 });
 
 export const shortUrlPasswordVerificationSchema = z.object({
