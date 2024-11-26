@@ -17,6 +17,12 @@ hono.post("/create", zValidator("json", createUrlSchema), async (c) => {
 	return c.json({ userId, param, url, password });
 });
 
+hono.get("/:param", (c) => {
+	const { param } = c.req.param();
+	//TODO: Get url to redirect to from database and check whether the short url need password to redirect
+	return c.text("url redirect");
+});
+
 hono.patch(
 	"/:param",
 	LoginMiddleware,
@@ -25,12 +31,6 @@ hono.patch(
 		return c.text("Update Path");
 	},
 );
-
-hono.get("/:param", (c) => {
-	const { param } = c.req.param();
-	//TODO: Get url to redirect to from database and check whether the short url need password to redirect
-	return c.text("url redirect");
-});
 
 hono.post(
 	"/:param/password",
