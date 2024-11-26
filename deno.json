@@ -10,5 +10,11 @@
 	"tasks": {
 		"start": "deno run -A ./main.ts",
 		"dev": "deno run -A --watch ./main.ts"
+	},
+	"imports": {
+		"@types/pg": "npm:@types/pg@^8.11.10",
+		"drizzle-kit": "npm:drizzle-kit@^0.28.1",
+		"drizzle-orm": "npm:drizzle-orm@^0.36.4",
+		"pg": "npm:pg@^8.13.1"
 	}
 }
