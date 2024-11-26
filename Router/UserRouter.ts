@@ -1,26 +1,43 @@
 import { Hono } from "npm:hono";
 import IRouterExport from "../Interfaces/Interface.ts";
 import { LoginMiddleware } from "../Middleware/Middlewares.ts";
+import { zValidator } from "npm:@hono/zod-validator";
+import {
+	userCreateSchema,
+	userLoginSchema,
+	userUpdatePasswordSchema,
+	userUpdateSchema,
+} from "../Schema/ZodSchema.ts";
 
 const hono = new Hono();
 
-hono.post("insert", async (c) => {
+hono.post("insert", zValidator("json", userCreateSchema), async (c) => {
 	//TODO: Add user
 });
 
-hono.post("login", async (c) => {
+hono.post("login", zValidator("json", userLoginSchema), async (c) => {
 	//TODO: Handle user login
 });
 
-hono.patch("update", LoginMiddleware, async (c) => {
-	//TODO: Update user information
-});
+hono.patch(
+	"update",
+	LoginMiddleware,
+	zValidator("json", userUpdateSchema),
+	async (c) => {
+		//TODO: Update user information
+	},
+);
 
-hono.patch("updatePassword", LoginMiddleware, async (c) => {
-	//TODO: Update user password
-});
+hono.patch(
+	"updatePassword",
+	LoginMiddleware,
+	zValidator("json", userUpdatePasswordSchema),
+	async (c) => {
+		//TODO: Update user password
+	},
+);
 
-hono.delete("delete", LoginMiddleware, async (c) => {
+hono.delete("delete/:id", LoginMiddleware, async (c) => {
 	//TODO: Delete user and logout
 });
 
