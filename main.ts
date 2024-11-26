@@ -3,11 +3,12 @@ import { cors } from "npm:hono/cors";
 import { expandGlob } from "jsr:@std/fs";
 import IRouterExport from "./Interfaces/Interface.ts";
 import { CookieStore, Session, sessionMiddleware } from "npm:hono-sessions";
+import { ISession } from "./Types/Type.ts";
 import { sessionKey } from "./Config.ts";
 
-const hono = new Hono<
-	{ Variables: { session: Session; session_key_rotation: boolean } }
->();
+const hono = new Hono<{
+	Variables: { session: Session<ISession>; session_key_rotation: boolean };
+}>();
 
 const store = new CookieStore();
 
@@ -27,8 +28,9 @@ hono.get("/", (c) => {
 });
 
 for await (const file of expandGlob(`${Deno.cwd()}/Router/**/*.ts`)) {
-	const { route, router }: IRouterExport =
-		(await import(`file://${file.path}`)).default;
+	const { route, router }: IRouterExport = (
+		await import(`file://${file.path}`)
+	).default;
 	hono.route(route, router);
 }
 
