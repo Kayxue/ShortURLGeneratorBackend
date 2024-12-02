@@ -4,9 +4,9 @@ import { LoginMiddleware } from "../Middleware/Middlewares.ts";
 import { zValidator } from "npm:@hono/zod-validator";
 import {
 	userCreateSchema,
-	userLoginSchema,
 	userUpdatePasswordSchema,
 	userUpdateSchema,
+	userLoginSchema
 } from "../Schema/ZodSchema.ts";
 import { hash, Variant, verify, Version } from "jsr:@felix/argon2";
 import dbClient from "../Client/DirzzleClient.ts";
