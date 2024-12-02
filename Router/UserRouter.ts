@@ -4,9 +4,9 @@ import { LoginMiddleware } from "../Middleware/Middlewares.ts";
 import { zValidator } from "npm:@hono/zod-validator";
 import {
 	userCreateSchema,
+	userLoginSchema,
 	userUpdatePasswordSchema,
 	userUpdateSchema,
-	userLoginSchema,
 } from "../Schema/ZodSchema.ts";
 import { hash, Variant, verify, Version } from "jsr:@felix/argon2";
 import dbClient from "../Client/DirzzleClient.ts";
@@ -67,7 +67,7 @@ hono.patch(
 	async (c) => {
 		//TODO: Update user information
 		return c.text("User update route");
-	}
+	},
 );
 
 hono.get("profile", LoginMiddleware, (c) => {
@@ -79,31 +79,33 @@ hono.patch(
 	LoginMiddleware,
 	zValidator("json", userUpdatePasswordSchema),
 	async (c) => {
-		const { oldPassword, newPassword, newPasswordAgain } =
-			c.req.valid("json");
+		const { oldPassword, newPassword, newPasswordAgain } = c.req.valid("json");
 		const userInSession = c.get("session").get("user");
 		const userFound = await dbClient.query.user.findFirst({
 			where: eq(user.id, userInSession.id),
 		});
 		const oldPasswordCorrect = await verify(
 			userFound.password,
-			oldPassword
+			oldPassword,
 		);
-		if (!oldPasswordCorrect)
+		if (!oldPasswordCorrect) {
 			return c.json({ message: "Old Password Incorrect" }, 400);
-		if (newPassword != newPasswordAgain)
+		}
+		if (newPassword != newPasswordAgain) {
 			return c.json({ message: "New password confirmation failed" }, 400);
-		if (newPassword == oldPassword)
+		}
+		if (newPassword == oldPassword) {
 			return c.json(
 				{ message: "New Password is same as old password" },
-				400
+				400,
 			);
+		}
 		await dbClient
 			.update(user)
 			.set({ password: newPassword })
 			.where(eq(user.id, userInSession.id));
 		return c.text("Password updated");
-	}
+	},
 );
 
 export default { route: "/user", router: hono } as IRouterExport;
