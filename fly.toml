@@ -1,9 +1,9 @@
-# fly.toml app configuration file generated for shorturlgeneratorbackend on 2024-11-20T18:14:41+08:00
+# fly.toml app configuration file generated for shorturlprojectbackend on 2024-12-02T11:05:09+08:00
 #
 # See https://fly.io/docs/reference/configuration/ for information about how to use this file.
 #
 
-app = 'shorturlgeneratorbackend'
+app = 'shorturlprojectbackend'
 primary_region = 'hkg'
 
 [build]

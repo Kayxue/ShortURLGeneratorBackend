@@ -10,6 +10,10 @@ WORKDIR /app
 
 # These steps will be re-run upon each file change in your working directory:
 COPY . .
+
+# Install dependencies
+RUN deno install --allow-scripts
+
 # Compile the main app so that it doesn't need to be compiled each startup/entry.
 RUN deno cache main.ts
 
