@@ -1,11 +1,10 @@
 import { z } from "npm:zod";
 
 export const createUrlSchema = z.object({
-	userId: z.string().optional(),
 	param: z.string().optional(),
-	url: z.string(),
+	url: z.string().url(),
 	password: z.string().optional(),
-	expiredDate: z.date().optional(),
+	expiredDate: z.string().datetime().optional(),
 });
 
 export const shortUrlPasswordVerificationSchema = z.object({

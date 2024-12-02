@@ -96,7 +96,7 @@ hono.patch(
 		}
 		if (newPassword == oldPassword) {
 			return c.json(
-				{ message: "New Password is same as old password" },
+				{ message: "New password is same as old password" },
 				400,
 			);
 		}

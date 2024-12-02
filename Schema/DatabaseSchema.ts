@@ -18,7 +18,7 @@ export const shortUrl = pgTable("shortUrl", {
 		onDelete: "set null",
 	}),
 	password: text("password"),
-	expireDate: timestamp({ mode: "string" }),
+	expireDate: timestamp({ mode: "date" }),
 });
 
 export const userToShortRelation = relations(user, ({ many }) => ({
