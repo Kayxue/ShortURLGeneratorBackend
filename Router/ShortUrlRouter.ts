@@ -19,10 +19,16 @@ hono.post("/create", zValidator("json", createUrlSchema), async (c) => {
 	return c.json({ userId, param, url, password });
 });
 
-hono.get("/:param", (c) => {
+hono.get("/:param", async (c) => {
 	const { param } = c.req.param();
-	//TODO: Get url to redirect to from database and check whether the short url need password to redirect
-	return c.text("url redirect");
+	const shortUrlData = await dbClient.query.shortUrl.findFirst({
+		where: eq(shortUrl.param, param),
+	});
+	if (!shortUrlData)
+		return c.json({ message: "The shorturl is not valid" }, 400);
+	if (shortUrlData.password?.length) return c.json("Need Password", 200);
+	//TODO: Check expiration date
+	return c.text(shortUrlData.url, 201);
 });
 
 hono.patch(
@@ -31,7 +37,7 @@ hono.patch(
 	/* zodValidator, */ (c) => {
 		//TODO: Check the short url information exist and owned by the user, if yes, update the information.
 		return c.text("Update Path");
-	},
+	}
 );
 
 hono.post(
@@ -40,8 +46,8 @@ hono.post(
 	async (c) => {
 		const { param } = c.req.param();
 		const { password } = c.req.valid("json");
-		const { password: correctPassword, ...shortUrlData } = await dbClient.query
-			.shortUrl.findFirst({
+		const { password: correctPassword, ...shortUrlData } =
+			await dbClient.query.shortUrl.findFirst({
 				where: eq(shortUrl.param, param),
 			});
 		if (!shortUrlData) {
@@ -51,7 +57,7 @@ hono.post(
 		const passwordCorrect = await verify(correctPassword, password);
 		if (passwordCorrect) return c.json(shortUrlData, 201);
 		return c.json({ message: "Password verification failed" }, 400);
-	},
+	}
 );
 
 export default { route: "/shorturl", router: hono } as IRouterExport;
