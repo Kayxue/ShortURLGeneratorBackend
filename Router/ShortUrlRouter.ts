@@ -1,5 +1,4 @@
 import { Hono } from "npm:hono";
-import { nanoid } from "npm:nanoid";
 import { zValidator } from "npm:@hono/zod-validator";
 import { verify } from "jsr:@felix/argon2";
 import IRouterExport from "../Interfaces/Interface.ts";
@@ -32,7 +31,7 @@ hono.patch(
 	/* zodValidator, */ (c) => {
 		//TODO: Check the short url information exist and owned by the user, if yes, update the information.
 		return c.text("Update Path");
-	}
+	},
 );
 
 hono.post(
@@ -41,16 +40,18 @@ hono.post(
 	async (c) => {
 		const { param } = c.req.param();
 		const { password } = c.req.valid("json");
-		const {password:correctPassword,...shortUrlData} = await dbClient.query.shortUrl.findFirst({
-			where: eq(shortUrl.param, param),
-		});
-		if (!shortUrlData)
+		const { password: correctPassword, ...shortUrlData } = await dbClient.query
+			.shortUrl.findFirst({
+				where: eq(shortUrl.param, param),
+			});
+		if (!shortUrlData) {
 			return c.json({ message: "The shorturl is not valid" }, 400);
+		}
 		if (!correctPassword?.length) return c.json(shortUrlData, 201);
 		const passwordCorrect = await verify(correctPassword, password);
 		if (passwordCorrect) return c.json(shortUrlData, 201);
 		return c.json({ message: "Password verification failed" }, 400);
-	}
+	},
 );
 
 export default { route: "/shorturl", router: hono } as IRouterExport;
