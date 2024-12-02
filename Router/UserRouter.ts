@@ -47,8 +47,9 @@ hono.post("login", zValidator("json", userLoginSchema), async (c) => {
 	const userFound = await dbClient.query.user.findFirst({
 		where: eq(user.username, username),
 	});
-	if (!user)
+	if (!user) {
 		return c.json({ message: "Password or username incorrect" }, 401);
+	}
 	const passwordCorrect = await verify(userFound.password, password);
 	if (!passwordCorrect) {
 		return c.json({ message: "Password or username incorrect" }, 401);
@@ -66,7 +67,7 @@ hono.patch(
 	async (c) => {
 		//TODO: Update user information
 		return c.text("User update route");
-	}
+	},
 );
 
 hono.get("profile", LoginMiddleware, (c) => {
@@ -80,7 +81,7 @@ hono.patch(
 	async (c) => {
 		//TODO: Update user password
 		return c.text("Update user password route");
-	}
+	},
 );
 
 export default { route: "/user", router: hono } as IRouterExport;
