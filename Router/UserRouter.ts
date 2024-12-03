@@ -60,6 +60,15 @@ hono.post("login", zValidator("json", userLoginSchema), async (c) => {
 	return c.json(leftUser);
 });
 
+hono.get("logout", LoginMiddleware,c => {
+	c.get("session").deleteSession()
+	return c.json({message:"You have been logged out"})
+})
+
+hono.get("profile", LoginMiddleware, (c) => {
+	return c.get("session").get("user");
+});
+
 hono.patch(
 	"update",
 	LoginMiddleware,
@@ -78,10 +87,6 @@ hono.patch(
 		return c.json(userUpdated);
 	},
 );
-
-hono.get("profile", LoginMiddleware, (c) => {
-	return c.get("session").get("user");
-});
 
 hono.patch(
 	"updatePassword",
