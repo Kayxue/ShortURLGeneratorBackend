@@ -4,7 +4,6 @@ import { expandGlob } from "jsr:@std/fs";
 import IRouterExport from "./Interfaces/Interface.ts";
 import { CookieStore, Session, sessionMiddleware } from "npm:hono-sessions";
 import { ISession } from "./Types/Type.ts";
-import { sessionKey } from "./Config.ts";
 
 const hono = new Hono<{
 	Variables: { session: Session<ISession>; session_key_rotation: boolean };
@@ -16,7 +15,7 @@ hono.use(
 	"*",
 	sessionMiddleware({
 		store,
-		encryptionKey: sessionKey,
+		encryptionKey: Deno.env.get("sessionKey"),
 		expireAfterSeconds: 60 * 60 * 24,
 	}),
 );

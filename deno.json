@@ -8,8 +8,8 @@
 		"semiColons": true
 	},
 	"tasks": {
-		"start": "deno run -A ./main.ts",
-		"dev": "deno run -A --watch ./main.ts"
+		"start": "deno run --env-file=.env -A ./main.ts",
+		"dev": "deno run --env-file=.env -A --watch ./main.ts"
 	},
 	"imports": {
 		"@types/pg": "npm:@types/pg@^8.11.10",
