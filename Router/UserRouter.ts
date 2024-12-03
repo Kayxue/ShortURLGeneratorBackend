@@ -66,7 +66,7 @@ hono.get("logout", LoginMiddleware, (c) => {
 });
 
 hono.get("profile", LoginMiddleware, (c) => {
-	return c.get("session").get("user");
+	return c.json(c.get("session").get("user"));
 });
 
 hono.patch(
