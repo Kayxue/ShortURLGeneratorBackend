@@ -5,7 +5,7 @@ import {
 	text,
 	timestamp,
 	varchar,
-} from "npm:drizzle-orm/pg-core";
+} from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { nanoid } from "npm:nanoid";
 
