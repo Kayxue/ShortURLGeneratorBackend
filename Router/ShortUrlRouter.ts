@@ -25,7 +25,7 @@ hono.post("/create", zValidator("json", createUrlSchema), async (c) => {
 	const user = c.get("session").get("user");
 	const dataToPush = {
 		param,
-		user: user ? user.id : undefined,
+		user: user?.id,
 		url,
 		password: password?.length
 			? await hash(password, {
