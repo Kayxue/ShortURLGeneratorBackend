@@ -65,11 +65,16 @@ hono.patch(
 	LoginMiddleware,
 	zValidator("json", userUpdateSchema),
 	async (c) => {
-		const session=c.get("session")
-		const userData=session.get("user")
-		const updateSchema=c.req.valid("json")
-		const userUpdated=await dbClient.update(user).set({...updateSchema}).where(eq(user.id,userData.id)).returning({username:user.username,name:user.name,id:user.id})
-		session.set("user",userUpdated)
+		const session = c.get("session");
+		const userData = session.get("user");
+		const updateSchema = c.req.valid("json");
+		const userUpdated = await dbClient.update(user).set({ ...updateSchema })
+			.where(eq(user.id, userData.id)).returning({
+				username: user.username,
+				name: user.name,
+				id: user.id,
+			});
+		session.set("user", userUpdated);
 		return c.json(userUpdated);
 	},
 );
