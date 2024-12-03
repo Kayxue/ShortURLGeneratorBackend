@@ -18,7 +18,7 @@ hono.use(
 		store,
 		encryptionKey: sessionKey,
 		expireAfterSeconds: 60 * 60 * 24,
-	})
+	}),
 );
 
 hono.use(cors());
