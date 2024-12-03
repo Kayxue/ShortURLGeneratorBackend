@@ -8,11 +8,13 @@ import {
 } from "../Schema/ZodSchema.ts";
 import { LoginMiddleware } from "../Middleware/Middlewares.ts";
 import dbClient from "../Client/DirzzleClient.ts";
-import { eq } from "drizzle-orm";
-import { shortUrl } from "../Schema/DatabaseSchema.ts";
+import { eq, sql } from "drizzle-orm";
+import { shortUrl, shortUrlAnalytic } from "../Schema/DatabaseSchema.ts";
 import moment from "npm:moment-timezone";
 import { Session } from "npm:hono-sessions";
 import { ISession } from "../Types/Type.ts";
+// @deno-types="npm:@types/geoip-lite"
+import geoip from "npm:geoip-lite";
 
 const hono = new Hono<{
 	Variables: { session: Session<ISession>; session_key_rotation: boolean };
@@ -23,14 +25,16 @@ hono.post("/create", zValidator("json", createUrlSchema), async (c) => {
 	const user = c.get("session").get("user");
 	const dataToPush = {
 		param,
-		user: user ? user.id : null,
+		user: user ? user.id : undefined,
 		url,
-		password: await hash(password, {
-			variant: Variant.Argon2id,
-			version: Version.V13,
-			timeCost: 8,
-			lanes: 8,
-		}),
+		password: password?.length
+			? await hash(password, {
+					variant: Variant.Argon2id,
+					version: Version.V13,
+					timeCost: 8,
+					lanes: 8,
+			  })
+			: undefined,
 		expiredDate,
 	};
 	try {
@@ -60,6 +64,20 @@ hono.get("/:param", async (c) => {
 	) {
 		return c.json({ message: "This url has already expired" }, 400);
 	}
+	//* Add to link analytics (Can't be test on local, need to be test after deployed to flyio)
+	const ip = c.req.header("fly-client-ip");
+	const country = geoip.lookup(ip).country;
+	await dbClient
+		.insert(shortUrlAnalytic)
+		.values({
+			param,
+			country,
+			count: 0,
+		})
+		.onConflictDoUpdate({
+			target: [shortUrlAnalytic.param, shortUrlAnalytic.country],
+			set: { count: sql`${shortUrlAnalytic.count} + 1` },
+		});
 	return c.text(shortUrlData.url, 201);
 });
 
@@ -69,8 +87,23 @@ hono.patch(
 	/* zodValidator, */ (c) => {
 		//TODO: Check the short url information exist and owned by the user, if yes, update the information.
 		return c.text("Update Path");
-	},
+	}
 );
+
+hono.get("/:param/info", async (c) => {
+	const { param } = c.req.param();
+	const { analytics } = c.req.query();
+	const shortUrlData = await dbClient.query.shortUrl.findFirst({
+		where: eq(shortUrl.param, param),
+		with: {
+			analytic: analytics?.toLowerCase() === "true" ? true : undefined,
+		},
+	});
+	if (!shortUrlData) {
+		return c.json({ message: "ShortUrl Data not found" }, 400);
+	}
+	return c.json(shortUrlData);
+});
 
 hono.post(
 	"/:param/password",
@@ -78,8 +111,8 @@ hono.post(
 	async (c) => {
 		const { param } = c.req.param();
 		const { password } = c.req.valid("json");
-		const { password: correctPassword, ...shortUrlData } = await dbClient.query
-			.shortUrl.findFirst({
+		const { password: correctPassword, ...shortUrlData } =
+			await dbClient.query.shortUrl.findFirst({
 				where: eq(shortUrl.param, param),
 			});
 		if (!shortUrlData) {
@@ -89,7 +122,7 @@ hono.post(
 		const passwordCorrect = await verify(correctPassword, password);
 		if (passwordCorrect) return c.json(shortUrlData, 201);
 		return c.json({ message: "Password verification failed" }, 400);
-	},
+	}
 );
 
 export default { route: "/shorturl", router: hono } as IRouterExport;

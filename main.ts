@@ -18,7 +18,7 @@ hono.use(
 		store,
 		encryptionKey: sessionKey,
 		expireAfterSeconds: 60 * 60 * 24,
-	}),
+	})
 );
 
 hono.use(cors());
@@ -33,5 +33,9 @@ for await (const file of expandGlob(`${Deno.cwd()}/Router/**/*.ts`)) {
 	).default;
 	hono.route(route, router);
 }
+
+hono.get("ip", (c) => {
+	return c.json({ headers: c.req.header() });
+});
 
 Deno.serve({ port: 3000 }, hono.fetch);

@@ -1,4 +1,11 @@
-import { pgTable, text, timestamp, varchar } from "npm:drizzle-orm/pg-core";
+import {
+	integer,
+	pgTable,
+	primaryKey,
+	text,
+	timestamp,
+	varchar,
+} from "npm:drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { nanoid } from "npm:nanoid";
 
@@ -21,13 +28,22 @@ export const shortUrl = pgTable("shortUrl", {
 	expireDate: timestamp({ mode: "date" }),
 });
 
+export const shortUrlAnalytic = pgTable("shortUrlAnalytic", {
+	param: text("param").notNull().references(() => shortUrl.param, {
+		onDelete: "cascade",
+	}),
+	country: text("country").notNull(),
+	count: integer("count").notNull(),
+}, (t) => [primaryKey({ columns: [t.param, t.country] })]);
+
 export const userToShortRelation = relations(user, ({ many }) => ({
 	urls: many(shortUrl),
 }));
 
-export const shortToUserRelation = relations(shortUrl, ({ one }) => ({
+export const shortToUserRelation = relations(shortUrl, ({ one, many }) => ({
 	user: one(user, {
 		fields: [shortUrl.userId],
 		references: [user.id],
 	}),
+	analytic: many(shortUrlAnalytic),
 }));
