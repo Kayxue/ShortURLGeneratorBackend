@@ -34,7 +34,7 @@ hono.get(
 				description: "Successful Response",
 				content: {
 					"text/plain": {
-						example:"Welcome to the ShortURL Backend"
+						example: "Welcome to the ShortURL Backend",
 					},
 				},
 			},
