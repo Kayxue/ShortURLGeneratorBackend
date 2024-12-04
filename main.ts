@@ -29,7 +29,16 @@ hono.get(
 	describeRoute({
 		description:
 			"Home route, just use to test out that whether the server is online",
-		responses: { 200: { description: "Successful Response" } },
+		responses: {
+			200: {
+				description: "Successful Response",
+				content: {
+					"text/plain": {
+						example:"Welcome to the ShortURL Backend"
+					},
+				},
+			},
+		},
 	}),
 	(c) => {
 		return c.text("Welcome to the ShortURL Backend");
