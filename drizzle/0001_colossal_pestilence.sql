@@ -1,0 +1,1 @@
+ALTER TABLE "shortUrl" RENAME COLUMN "expireDate" TO "expiredTime";

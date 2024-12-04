@@ -15,6 +15,9 @@
 		"@types/pg": "npm:@types/pg@^8.11.10",
 		"drizzle-kit": "npm:drizzle-kit@^0.28.1",
 		"drizzle-orm": "npm:drizzle-orm@^0.36.4",
-		"pg": "npm:pg@^8.13.1"
+		"hono-openapi": "npm:hono-openapi@^0.2.1",
+		"pg": "npm:pg@^8.13.1",
+		"zod": "npm:zod@^3.23.8",
+		"zod-openapi": "npm:zod-openapi@^4.1.0"
 	}
 }

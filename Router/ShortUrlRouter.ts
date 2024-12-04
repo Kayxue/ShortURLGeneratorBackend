@@ -21,7 +21,7 @@ const hono = new Hono<{
 }>();
 
 hono.post("/create", zValidator("json", createUrlSchema), async (c) => {
-	const { param, url, password, expiredDate } = c.req.valid("json");
+	const { param, url, password, expiredTime } = c.req.valid("json");
 	const user = c.get("session").get("user");
 	const dataToPush = {
 		param,
@@ -35,7 +35,7 @@ hono.post("/create", zValidator("json", createUrlSchema), async (c) => {
 				lanes: 8,
 			})
 			: undefined,
-		expiredDate,
+		expiredTime,
 	};
 	try {
 		const data = await dbClient
@@ -58,7 +58,7 @@ hono.get("/:param", async (c) => {
 	}
 	if (shortUrlData.password?.length) return c.json("Need Password", 200);
 	if (
-		moment(shortUrlData.expireDate)
+		moment(shortUrlData.expiredTime)
 			.tz("Asia/Taipei")
 			.diff(moment(new Date()).tz("Asia/Taipei")) < 0
 	) {
