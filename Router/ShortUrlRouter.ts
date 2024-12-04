@@ -9,7 +9,7 @@ import {
 import { LoginMiddleware } from "../Middleware/Middlewares.ts";
 import dbClient from "../Client/DirzzleClient.ts";
 import { eq, sql } from "drizzle-orm";
-import { shortUrls, shortUrlAnalytics } from "../Schema/DatabaseSchema.ts";
+import { shortUrlAnalytics, shortUrls } from "../Schema/DatabaseSchema.ts";
 import moment from "npm:moment-timezone";
 import { Session } from "npm:hono-sessions";
 import { ISession } from "../Types/Type.ts";
@@ -42,11 +42,11 @@ hono.post(
 			url,
 			password: password?.length
 				? await hash(password, {
-						variant: Variant.Argon2id,
-						version: Version.V13,
-						timeCost: 8,
-						lanes: 8,
-				  })
+					variant: Variant.Argon2id,
+					version: Version.V13,
+					timeCost: 8,
+					lanes: 8,
+				})
 				: undefined,
 			expiredTime,
 		};
@@ -57,9 +57,9 @@ hono.post(
 				.returning();
 			return c.json(data, 201);
 		} catch (e) {
-			return c.json("Pushed Failed", 400);
+			return c.json({ message: "Pushed Failed" }, 400);
 		}
-	}
+	},
 );
 
 hono.get(
@@ -85,8 +85,9 @@ hono.get(
 		if (!shortUrlData) {
 			return c.json({ message: "The shorturl is not valid" }, 400);
 		}
-		if (shortUrlData.password?.length)
-			return c.json({ message: "Need Password" }, 200);
+		if (shortUrlData.password?.length) {
+			return c.text("Need Password", 200);
+		}
 		if (shortUrlData.expiredTime) {
 			if (
 				moment(shortUrlData.expiredTime)
@@ -111,7 +112,7 @@ hono.get(
 				set: { count: sql`${shortUrlAnalytics.count} + 1` },
 			});
 		return c.text(shortUrlData.url, 201);
-	}
+	},
 );
 
 hono.patch(
@@ -129,7 +130,7 @@ hono.patch(
 	/* zodValidator, */ (c) => {
 		//TODO: Check the short url information exist and owned by the user, if yes, update the information.
 		return c.text("Update Path");
-	}
+	},
 );
 
 hono.get(
@@ -149,15 +150,14 @@ hono.get(
 		const shortUrlData = await dbClient.query.shortUrls.findFirst({
 			where: eq(shortUrls.param, param),
 			with: {
-				analytic:
-					analytics?.toLowerCase() === "true" ? true : undefined,
+				analytic: analytics?.toLowerCase() === "true" ? true : undefined,
 			},
 		});
 		if (!shortUrlData) {
 			return c.json({ message: "ShortUrl Data not found" }, 400);
 		}
 		return c.json(shortUrlData);
-	}
+	},
 );
 
 hono.post(
@@ -167,8 +167,7 @@ hono.post(
 		responses: {
 			201: { description: "No password protect or password correct" },
 			400: {
-				description:
-					"Shorturl not found or password incorrect (Check message)",
+				description: "Shorturl not found or password incorrect (Check message)",
 			},
 		},
 	}),
@@ -176,8 +175,8 @@ hono.post(
 	async (c) => {
 		const { param } = c.req.param();
 		const { password } = c.req.valid("json");
-		const { password: correctPassword, ...shortUrlData } =
-			await dbClient.query.shortUrls.findFirst({
+		const { password: correctPassword, ...shortUrlData } = await dbClient.query
+			.shortUrls.findFirst({
 				where: eq(shortUrls.param, param),
 			});
 		if (!shortUrlData) {
@@ -205,7 +204,7 @@ hono.post(
 			return c.json(shortUrlData, 201);
 		}
 		return c.json({ message: "Password verification failed" }, 400);
-	}
+	},
 );
 
 export default { route: "/shorturl", router: hono } as IRouterExport;
