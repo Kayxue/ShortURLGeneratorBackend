@@ -25,7 +25,7 @@ hono.post(
 	describeRoute({ description: "Register an user" ,responses: {
 		201: { description: "Successfully register" },
 		400: {
-			description: "Username deprecated"
+			description: "Username duplicated"
 		},
 	}}),
 	zValidator("json", userCreateSchema),
