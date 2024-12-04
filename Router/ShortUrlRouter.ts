@@ -86,7 +86,8 @@ hono.get(
 		if (!shortUrlData) {
 			return c.json({ message: "The shorturl is not valid" }, 400);
 		}
-		if (shortUrlData.password?.length) return c.json("Need Password", 200);
+		if (shortUrlData.password?.length)
+			return c.json({ message: "Need Password" }, 200);
 		if (shortUrlData.expiredTime) {
 			if (
 				moment(shortUrlData.expiredTime)
