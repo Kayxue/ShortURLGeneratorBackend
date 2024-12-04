@@ -36,7 +36,7 @@ for await (const file of expandGlob(`${Deno.cwd()}/Router/**/*.ts`)) {
 }
 
 hono.get(
-	"ip",
+	"headers",
 	describeRoute({
 		description: "Check header",
 		responses: { 200: { description: "Successful response" } },
