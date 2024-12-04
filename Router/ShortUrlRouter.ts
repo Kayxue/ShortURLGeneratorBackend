@@ -50,7 +50,6 @@ hono.post(
 				: undefined,
 			expiredTime,
 		};
-		console.log(dataToPush);
 		try {
 			const data = await dbClient
 				.insert(shortUrls)
