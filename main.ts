@@ -32,11 +32,6 @@ hono.get(
 		responses: {
 			200: {
 				description: "Successful Response",
-				content: {
-					"text/plain": {
-						example: "Welcome to the ShortURL Backend",
-					},
-				},
 			},
 		},
 	}),
