@@ -9,7 +9,7 @@ import {
 import { LoginMiddleware } from "../Middleware/Middlewares.ts";
 import dbClient from "../Client/DirzzleClient.ts";
 import { eq, sql } from "drizzle-orm";
-import { shortUrl, shortUrlAnalytic } from "../Schema/DatabaseSchema.ts";
+import { shortUrls, shortUrlAnalytics } from "../Schema/DatabaseSchema.ts";
 import moment from "npm:moment-timezone";
 import { Session } from "npm:hono-sessions";
 import { ISession } from "../Types/Type.ts";
@@ -38,7 +38,7 @@ hono.post(
 		const user = c.get("session").get("user");
 		const dataToPush = {
 			param,
-			user: user?.id,
+			userId: user?.id,
 			url,
 			password: password?.length
 				? await hash(password, {
@@ -50,9 +50,10 @@ hono.post(
 				: undefined,
 			expiredTime,
 		};
+		console.log(dataToPush)
 		try {
 			const data = await dbClient
-				.insert(shortUrl)
+				.insert(shortUrls)
 				.values(dataToPush)
 				.returning();
 			return c.json(data, 201);
@@ -79,33 +80,35 @@ hono.get(
 	}),
 	async (c) => {
 		const { param } = c.req.param();
-		const shortUrlData = await dbClient.query.shortUrl.findFirst({
-			where: eq(shortUrl.param, param),
+		const shortUrlData = await dbClient.query.shortUrls.findFirst({
+			where: eq(shortUrls.param, param),
 		});
 		if (!shortUrlData) {
 			return c.json({ message: "The shorturl is not valid" }, 400);
 		}
 		if (shortUrlData.password?.length) return c.json("Need Password", 200);
-		if (
-			moment(shortUrlData.expiredTime)
-				.tz("Asia/Taipei")
-				.diff(moment(new Date()).tz("Asia/Taipei")) < 0
-		) {
-			return c.json({ message: "This url has already expired" }, 400);
+		if (shortUrlData.expiredTime) {
+			if (
+				moment(shortUrlData.expiredTime)
+					.tz("Asia/Taipei")
+					.diff(moment(new Date()).tz("Asia/Taipei")) < 0
+			) {
+				return c.json({ message: "This url has already expired" }, 400);
+			}
 		}
 		//* Add to link analytics (Can't be test on local, need to be test after deployed to flyio)
 		const ip = c.req.header("fly-client-ip");
 		const country = geoip.lookup(ip).country;
 		await dbClient
-			.insert(shortUrlAnalytic)
+			.insert(shortUrlAnalytics)
 			.values({
 				param,
 				country,
 				count: 0,
 			})
 			.onConflictDoUpdate({
-				target: [shortUrlAnalytic.param, shortUrlAnalytic.country],
-				set: { count: sql`${shortUrlAnalytic.count} + 1` },
+				target: [shortUrlAnalytics.param, shortUrlAnalytics.country],
+				set: { count: sql`${shortUrlAnalytics.count} + 1` },
 			});
 		return c.text(shortUrlData.url, 201);
 	},
@@ -143,8 +146,8 @@ hono.get(
 	async (c) => {
 		const { param } = c.req.param();
 		const { analytics } = c.req.query();
-		const shortUrlData = await dbClient.query.shortUrl.findFirst({
-			where: eq(shortUrl.param, param),
+		const shortUrlData = await dbClient.query.shortUrls.findFirst({
+			where: eq(shortUrls.param, param),
 			with: {
 				analytic: analytics?.toLowerCase() === "true" ? true : undefined,
 			},
@@ -172,8 +175,8 @@ hono.post(
 		const { param } = c.req.param();
 		const { password } = c.req.valid("json");
 		const { password: correctPassword, ...shortUrlData } = await dbClient.query
-			.shortUrl.findFirst({
-				where: eq(shortUrl.param, param),
+			.shortUrls.findFirst({
+				where: eq(shortUrls.param, param),
 			});
 		if (!shortUrlData) {
 			return c.json({ message: "The shorturl is not valid" }, 400);

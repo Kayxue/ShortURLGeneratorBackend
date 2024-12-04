@@ -10,7 +10,7 @@ import {
 } from "../Schema/ZodSchema.ts";
 import { hash, Variant, verify, Version } from "jsr:@felix/argon2";
 import dbClient from "../Client/DirzzleClient.ts";
-import { user } from "../Schema/DatabaseSchema.ts";
+import { users } from "../Schema/DatabaseSchema.ts";
 import { eq } from "drizzle-orm";
 import { Session } from "npm:hono-sessions";
 import { ISession } from "../Types/Type.ts";
@@ -46,7 +46,7 @@ hono.post(
 		};
 		try {
 			const userInserted = await dbClient
-				.insert(user)
+				.insert(users)
 				.values(objectToInsert)
 				.returning();
 			return c.json(userInserted, 201);
@@ -70,10 +70,10 @@ hono.post(
 	zValidator("json", userLoginSchema),
 	async (c) => {
 		const { username, password } = c.req.valid("json");
-		const userFound = await dbClient.query.user.findFirst({
-			where: eq(user.username, username),
+		const userFound = await dbClient.query.users.findFirst({
+			where: eq(users.username, username),
 		});
-		if (!user) {
+		if (!userFound) {
 			return c.json({ message: "Password or username incorrect" }, 401);
 		}
 		const passwordCorrect = await verify(userFound.password, password);
@@ -139,11 +139,11 @@ hono.patch(
 		const session = c.get("session");
 		const userData = session.get("user");
 		const updateSchema = c.req.valid("json");
-		const userUpdated = await dbClient.update(user).set({ ...updateSchema })
-			.where(eq(user.id, userData.id)).returning({
-				username: user.username,
-				name: user.name,
-				id: user.id,
+		const userUpdated = await dbClient.update(users).set({ ...updateSchema })
+			.where(eq(users.id, userData.id)).returning({
+				username: users.username,
+				name: users.name,
+				id: users.id,
 			});
 		session.set("user", userUpdated);
 		return c.json(userUpdated, 201);
@@ -169,8 +169,8 @@ hono.patch(
 	async (c) => {
 		const { oldPassword, newPassword, newPasswordAgain } = c.req.valid("json");
 		const userInSession = c.get("session").get("user");
-		const userFound = await dbClient.query.user.findFirst({
-			where: eq(user.id, userInSession.id),
+		const userFound = await dbClient.query.users.findFirst({
+			where: eq(users.id, userInSession.id),
 		});
 		const oldPasswordCorrect = await verify(
 			userFound.password,
@@ -189,9 +189,9 @@ hono.patch(
 			);
 		}
 		await dbClient
-			.update(user)
+			.update(users)
 			.set({ password: newPassword })
-			.where(eq(user.id, userInSession.id));
+			.where(eq(users.id, userInSession.id));
 		return c.text("Password updated", 201);
 	},
 );
