@@ -24,9 +24,17 @@ hono.use(
 
 hono.use(cors());
 
-hono.get("/", (c) => {
-	return c.text("Welcome to the ShortURL Backend");
-});
+hono.get(
+	"/",
+	describeRoute({
+		description:
+			"Home route, just use to test out that whether the server is online",
+		responses: { 200: { description: "Successful Response" } },
+	}),
+	(c) => {
+		return c.text("Welcome to the ShortURL Backend");
+	}
+);
 
 for await (const file of expandGlob(`${Deno.cwd()}/Router/**/*.ts`)) {
 	const { route, router }: IRouterExport = (
@@ -38,7 +46,7 @@ for await (const file of expandGlob(`${Deno.cwd()}/Router/**/*.ts`)) {
 hono.get(
 	"headers",
 	describeRoute({
-		description: "Check header",
+		description: "Check header of request",
 		responses: { 200: { description: "Successful response" } },
 	}),
 	(c) => {
