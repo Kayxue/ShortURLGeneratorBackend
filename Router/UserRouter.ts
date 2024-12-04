@@ -20,59 +20,104 @@ const hono = new Hono<{
 	Variables: { session: Session<ISession>; session_key_rotation: boolean };
 }>();
 
-hono.post("register",describeRoute({description:"Register an user"}), zValidator("json", userCreateSchema), async (c) => {
-	const { username, password, name } = c.req.valid("json");
-	const objectToInsert = {
-		username,
-		password: await hash(password, {
-			variant: Variant.Argon2id,
-			version: Version.V13,
-			timeCost: 8,
-			lanes: 8,
-		}),
-		name,
-	};
-	try {
-		const userInserted = await dbClient
-			.insert(user)
-			.values(objectToInsert)
-			.returning();
-		return c.json(userInserted);
-	} catch (e) {
-		return c.json({ message: "User Insertion Failed" }, 400);
-	}
-});
+hono.post(
+	"register",
+	describeRoute({ description: "Register an user" ,responses: {
+		201: { description: "Successfully register" },
+		400: {
+			description: "Username deprecated"
+		},
+	}}),
+	zValidator("json", userCreateSchema),
+	async (c) => {
+		const { username, password, name } = c.req.valid("json");
+		const objectToInsert = {
+			username,
+			password: await hash(password, {
+				variant: Variant.Argon2id,
+				version: Version.V13,
+				timeCost: 8,
+				lanes: 8,
+			}),
+			name,
+		};
+		try {
+			const userInserted = await dbClient
+				.insert(user)
+				.values(objectToInsert)
+				.returning();
+			return c.json(userInserted,201);
+		} catch (e) {
+			return c.json({ message: "User Insertion Failed" }, 400);
+		}
+	},
+);
 
-hono.post("login",describeRoute({description:"User Login"}), zValidator("json", userLoginSchema), async (c) => {
-	const { username, password } = c.req.valid("json");
-	const userFound = await dbClient.query.user.findFirst({
-		where: eq(user.username, username),
-	});
-	if (!user) {
-		return c.json({ message: "Password or username incorrect" }, 401);
-	}
-	const passwordCorrect = await verify(userFound.password, password);
-	if (!passwordCorrect) {
-		return c.json({ message: "Password or username incorrect" }, 401);
-	}
-	const session = c.get("session");
-	const { password: _, ...leftUser } = userFound;
-	session.set("user", leftUser);
-	return c.json(leftUser);
-});
+hono.post(
+	"login",
+	describeRoute({ description: "User Login" ,responses: {
+		201: { description: "Login successful" },
+		401: {
+			description: "Login fail",
+		},
+	}}),
+	zValidator("json", userLoginSchema),
+	async (c) => {
+		const { username, password } = c.req.valid("json");
+		const userFound = await dbClient.query.user.findFirst({
+			where: eq(user.username, username),
+		});
+		if (!user) {
+			return c.json({ message: "Password or username incorrect" }, 401);
+		}
+		const passwordCorrect = await verify(userFound.password, password);
+		if (!passwordCorrect) {
+			return c.json({ message: "Password or username incorrect" }, 401);
+		}
+		const session = c.get("session");
+		const { password: _, ...leftUser } = userFound;
+		session.set("user", leftUser);
+		return c.json(leftUser,201);
+	},
+);
 
-hono.get("logout",describeRoute({description:"User Logout (Need Login)"}), LoginMiddleware, (c) => {
-	c.get("session").deleteSession();
-	return c.json({ message: "You have been logged out" });
-});
+hono.get(
+	"logout",
+	describeRoute({ description: "User Logout",responses: {
+		200: { description: "Logged out" },
+		401:{
+			description:"Not logged in"
+		}
+	} }),
+	LoginMiddleware,
+	(c) => {
+		c.get("session").deleteSession();
+		return c.json({ message: "You have been logged out" });
+	},
+);
 
-hono.get("profile",describeRoute({description:"Retrieve current user data (Need Login)"}), LoginMiddleware, (c) => {
-	return c.json(c.get("session").get("user"));
-});
+hono.get(
+	"profile",
+	describeRoute({ description: "Retrieve current user data",responses: {
+		200: { description: "Successfully retrieved profile" },
+		401:{
+			description:"Not logged in"
+		}
+	} }),
+	LoginMiddleware,
+	(c) => {
+		return c.json(c.get("session").get("user"));
+	},
+);
 
 hono.patch(
 	"update",
-	describeRoute({description:"Update user information (Need login)"}),
+	describeRoute({ description: "Update user information",responses: {
+		201: { description: "User updated" },
+		401:{
+			description:"Not logged in"
+		}
+	} }),
 	LoginMiddleware,
 	zValidator("json", userUpdateSchema),
 	async (c) => {
@@ -86,13 +131,21 @@ hono.patch(
 				id: user.id,
 			});
 		session.set("user", userUpdated);
-		return c.json(userUpdated);
+		return c.json(userUpdated,201);
 	},
 );
 
 hono.patch(
 	"updatePassword",
-	describeRoute({description:"Update user password (Need login)"}),
+	describeRoute({ description: "Update user password (Need login)",responses: {
+		201: { description: "Password updated" },
+		400: {
+			description: "Password not match",
+		},
+		401:{
+			description:"Not logged in"
+		}
+	} }),
 	LoginMiddleware,
 	zValidator("json", userUpdatePasswordSchema),
 	async (c) => {
@@ -121,7 +174,7 @@ hono.patch(
 			.update(user)
 			.set({ password: newPassword })
 			.where(eq(user.id, userInSession.id));
-		return c.text("Password updated");
+		return c.text("Password updated",201);
 	},
 );
 

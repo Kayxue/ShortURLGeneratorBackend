@@ -4,7 +4,7 @@ import { expandGlob } from "jsr:@std/fs";
 import IRouterExport from "./Interfaces/Interface.ts";
 import { CookieStore, Session, sessionMiddleware } from "npm:hono-sessions";
 import { ISession } from "./Types/Type.ts";
-import { openAPISpecs, describeRoute } from "hono-openapi";
+import { describeRoute, openAPISpecs } from "hono-openapi";
 import { apiReference } from "npm:@scalar/hono-api-reference";
 
 const hono = new Hono<{
@@ -19,7 +19,7 @@ hono.use(
 		store,
 		encryptionKey: Deno.env.get("sessionKey"),
 		expireAfterSeconds: 60 * 60 * 24,
-	})
+	}),
 );
 
 hono.use(cors());
@@ -33,7 +33,7 @@ hono.get(
 	}),
 	(c) => {
 		return c.text("Welcome to the ShortURL Backend");
-	}
+	},
 );
 
 for await (const file of expandGlob(`${Deno.cwd()}/Router/**/*.ts`)) {
@@ -51,14 +51,14 @@ hono.get(
 	}),
 	(c) => {
 		return c.json({ headers: c.req.header() });
-	}
+	},
 );
 
 hono.get(
 	"openapi",
 	openAPISpecs(hono, {
 		documentation: { info: { title: "Documentation", version: "1.0.0" } },
-	})
+	}),
 );
 
 hono.get("docs", apiReference({ theme: "saturn", spec: { url: "/openapi" } }));

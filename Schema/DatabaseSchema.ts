@@ -25,7 +25,7 @@ export const shortUrl = pgTable("shortUrl", {
 		onDelete: "set null",
 	}),
 	password: text("password"),
-	expiredTime: timestamp("expiredTime",{ mode: "date" }),
+	expiredTime: timestamp("expiredTime", { mode: "date" }),
 });
 
 export const shortUrlAnalytic = pgTable("shortUrlAnalytic", {
