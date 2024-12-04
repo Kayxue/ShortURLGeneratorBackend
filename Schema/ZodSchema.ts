@@ -1,4 +1,4 @@
-import { z } from "npm:@hono/zod-openapi";
+import { z } from "@hono/zod-openapi";
 
 export const createUrlSchema = z.object({
 	param: z.string().optional().openapi({param:{name:'param',description:"Param of shorturl"}}),

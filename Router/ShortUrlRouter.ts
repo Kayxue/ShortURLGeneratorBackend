@@ -1,5 +1,5 @@
 import { Hono } from "npm:hono";
-import { zValidator } from "npm:@hono/zod-validator";
+import { validator as zValidator } from "npm:hono-openapi/zod";
 import { hash, Variant, verify, Version } from "jsr:@felix/argon2";
 import IRouterExport from "../Interfaces/Interface.ts";
 import {
@@ -15,12 +15,13 @@ import { Session } from "npm:hono-sessions";
 import { ISession } from "../Types/Type.ts";
 // @deno-types="npm:@types/geoip-lite"
 import geoip from "npm:geoip-lite";
+import { describeRoute } from "hono-openapi";
 
 const hono = new Hono<{
 	Variables: { session: Session<ISession>; session_key_rotation: boolean };
 }>();
 
-hono.post("/create", zValidator("json", createUrlSchema), async (c) => {
+hono.post("/create",describeRoute({description:"Create shorturl"}), zValidator("json", createUrlSchema), async (c) => {
 	const { param, url, password, expiredTime } = c.req.valid("json");
 	const user = c.get("session").get("user");
 	const dataToPush = {
@@ -48,7 +49,7 @@ hono.post("/create", zValidator("json", createUrlSchema), async (c) => {
 	}
 });
 
-hono.get("/:param", async (c) => {
+hono.get("/:param",describeRoute({description:"Get url of shorturl to redirect"}), async (c) => {
 	const { param } = c.req.param();
 	const shortUrlData = await dbClient.query.shortUrl.findFirst({
 		where: eq(shortUrl.param, param),
@@ -83,6 +84,7 @@ hono.get("/:param", async (c) => {
 
 hono.patch(
 	"/:param",
+	describeRoute({description:"Update shorturl information"}),
 	LoginMiddleware,
 	/* zodValidator, */ (c) => {
 		//TODO: Check the short url information exist and owned by the user, if yes, update the information.
@@ -90,7 +92,7 @@ hono.patch(
 	},
 );
 
-hono.get("/:param/info", async (c) => {
+hono.get("/:param/info",describeRoute({description:"Get full info of shorturl"}), async (c) => {
 	const { param } = c.req.param();
 	const { analytics } = c.req.query();
 	const shortUrlData = await dbClient.query.shortUrl.findFirst({
@@ -107,6 +109,7 @@ hono.get("/:param/info", async (c) => {
 
 hono.post(
 	"/:param/password",
+	describeRoute({description:"Verify password for protected shorturl"}),
 	zValidator("json", shortUrlPasswordVerificationSchema),
 	async (c) => {
 		const { param } = c.req.param();

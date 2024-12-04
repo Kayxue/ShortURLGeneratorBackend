@@ -1,7 +1,7 @@
 import { Hono } from "npm:hono";
 import IRouterExport from "../Interfaces/Interface.ts";
 import { LoginMiddleware } from "../Middleware/Middlewares.ts";
-import { zValidator } from "npm:@hono/zod-validator";
+import { validator as zValidator } from "npm:hono-openapi/zod";
 import {
 	userCreateSchema,
 	userLoginSchema,
@@ -14,12 +14,13 @@ import { user } from "../Schema/DatabaseSchema.ts";
 import { eq } from "drizzle-orm";
 import { Session } from "npm:hono-sessions";
 import { ISession } from "../Types/Type.ts";
+import { describeRoute } from "hono-openapi";
 
 const hono = new Hono<{
 	Variables: { session: Session<ISession>; session_key_rotation: boolean };
 }>();
 
-hono.post("register", zValidator("json", userCreateSchema), async (c) => {
+hono.post("register",describeRoute({description:"Register an user"}), zValidator("json", userCreateSchema), async (c) => {
 	const { username, password, name } = c.req.valid("json");
 	const objectToInsert = {
 		username,
@@ -42,7 +43,7 @@ hono.post("register", zValidator("json", userCreateSchema), async (c) => {
 	}
 });
 
-hono.post("login", zValidator("json", userLoginSchema), async (c) => {
+hono.post("login",describeRoute({description:"User Login"}), zValidator("json", userLoginSchema), async (c) => {
 	const { username, password } = c.req.valid("json");
 	const userFound = await dbClient.query.user.findFirst({
 		where: eq(user.username, username),
@@ -60,17 +61,18 @@ hono.post("login", zValidator("json", userLoginSchema), async (c) => {
 	return c.json(leftUser);
 });
 
-hono.get("logout", LoginMiddleware, (c) => {
+hono.get("logout",describeRoute({description:"User Logout (Need Login)"}), LoginMiddleware, (c) => {
 	c.get("session").deleteSession();
 	return c.json({ message: "You have been logged out" });
 });
 
-hono.get("profile", LoginMiddleware, (c) => {
+hono.get("profile",describeRoute({description:"Retrieve current user data (Need Login)"}), LoginMiddleware, (c) => {
 	return c.json(c.get("session").get("user"));
 });
 
 hono.patch(
 	"update",
+	describeRoute({description:"Update user information (Need login)"}),
 	LoginMiddleware,
 	zValidator("json", userUpdateSchema),
 	async (c) => {
@@ -90,6 +92,7 @@ hono.patch(
 
 hono.patch(
 	"updatePassword",
+	describeRoute({description:"Update user password (Need login)"}),
 	LoginMiddleware,
 	zValidator("json", userUpdatePasswordSchema),
 	async (c) => {
