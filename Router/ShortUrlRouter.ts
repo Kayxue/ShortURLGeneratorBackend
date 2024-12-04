@@ -55,7 +55,7 @@ hono.post(
 				.insert(shortUrl)
 				.values(dataToPush)
 				.returning();
-			return c.json(data,201);
+			return c.json(data, 201);
 		} catch (e) {
 			return c.json("Pushed Failed", 400);
 		}
