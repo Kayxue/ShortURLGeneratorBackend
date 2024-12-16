@@ -27,6 +27,24 @@ export const shortUrlPasswordVerificationSchema = z.object({
 	}),
 });
 
+export const shortUrlUpdateSchema=z.object({
+	url: z.string().url().openapi({
+		param: {
+			name: "url",
+			description: "The url the shorturl will redirect to.",
+		},
+	}),
+	password: z.string().optional().openapi({
+		param: {
+			name: "password",
+			description: "Shorturl for shorturl protection",
+		},
+	}),
+	expiredTime: z.string().datetime().optional().openapi({
+		param: { name: "expiredTime", description: "Expire time of the shorturl" },
+	}),
+})
+
 export const userCreateSchema = z.object({
 	username: z.string().openapi({
 		param: { name: "username", description: "Username of the new user" },
