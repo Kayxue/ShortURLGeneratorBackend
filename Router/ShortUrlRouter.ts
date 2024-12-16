@@ -119,7 +119,7 @@ hono.get(
 hono.patch(
 	"/:param",
 	describeRoute({
-		description: "Update shorturl information (Not finished)",
+		description: "Update shorturl information",
 		responses: {
 			200: { description: "Update shorturl information successful" },
 			400: {
@@ -130,7 +130,6 @@ hono.patch(
 	LoginMiddleware,
 	zValidator("json", shortUrlUpdateSchema),
 	async (c) => {
-		//TODO: Check the short url information exist and owned by the user, if yes, update the information.
 		const obj = c.req.valid("json");
 		const user = c.get("session").get("user");
 		const { param } = c.req.param();
