@@ -201,7 +201,7 @@ hono.post(
 		if (!shortUrlData) {
 			return c.json({ message: "The shorturl is not valid" }, 400);
 		}
-		if (!correctPassword?.length) return c.json(shortUrlData, 201);
+		if (!correctPassword?.length) return c.text(shortUrlData.url, 201);
 		const passwordCorrect = await verify(correctPassword, password);
 		if (passwordCorrect) {
 			const ip = c.req.header("fly-client-ip");
@@ -220,7 +220,7 @@ hono.post(
 					],
 					set: { count: sql`${shortUrlAnalytics.count} + 1` },
 				});
-			return c.json(shortUrlData, 201);
+			return c.text(shortUrlData.url, 201);
 		}
 		return c.json({ message: "Password verification failed" }, 400);
 	}
