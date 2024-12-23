@@ -74,7 +74,7 @@ hono.get(
 					"The route doesn't have password protection, will return link to redirect",
 			},
 			400: {
-				description: "Shorturl not found",
+				description: "Shorturl not found or has already expired",
 			},
 		},
 	}),
