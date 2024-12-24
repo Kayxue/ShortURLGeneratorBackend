@@ -58,6 +58,7 @@ hono.post(
 				.returning();
 			return c.json(data, 201);
 		} catch (e) {
+			console.log(e)
 			return c.json({ message: "Pushed Failed" }, 400);
 		}
 	}
